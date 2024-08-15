@@ -1,21 +1,20 @@
 // app/layout.tsx
-import Navbar from '@/components/component/Navbar';
-import './globals.css';
-import { ReactNode } from 'react';
+import { Germania_One } from 'next/font/google';
 
-export const metadata = {
-  title: 'swisspants',
-  description: '',
-};
+const germaniaOne = Germania_One({
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+});
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <body>
-        
-        {children}
-      
-      </body>
+    <html lang="en" className={germaniaOne.className}>
+      <body>{children}</body>
     </html>
   );
 }

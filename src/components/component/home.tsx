@@ -1,28 +1,58 @@
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import StoreIcon from "@/components/icons/StoreIcon"
-import CircuitBoardIcon from "@/components/icons/CircuitBoardIcon"
-import GemIcon from "@/components/icons/GemIcon"
-import HomeIcon from "@/components/icons/HomeIcon"
-import ListIcon from "@/components/icons/ListIcon"
-import MusicIcon from "@/components/icons/MusicIcon"
-import SearchIcon from "@/components/icons/SearchIcon"
-import ShoppingCartIcon from "@/components/icons/ShoppingCartIcon"
-import UserIcon from "@/components/icons/UserIcon"
-import { faSmoking ,faBreadSlice , faCookieBite} from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { faMagnifyingGlass, faSmoking, faBreadSlice, faCookieBite } from '@fortawesome/free-solid-svg-icons';
+import { collection, getDocs } from 'firebase/firestore';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { db } from '@/lib/firebase';
+import { useCart } from '@/app/backend/CartContext';
+import StoreIcon from '@/components/icons/StoreIcon';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import GemIcon from '@/components/icons/GemIcon';
+import { Skeleton } from '@nextui-org/react';
+import Link from 'next/link';
+import '@/app/globals.css';
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  imageURL: string;
+}
 
-export default function Home() {
+const Home: React.FC = () => {
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const productsCollection = collection(db, 'products');
+      const snapshot = await getDocs(productsCollection);
+      const productsList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Product[];
+      setProducts(productsList);
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({ ...product, quantity: 1 });
+    setAnimatingId(product.id); // Trigger animation
+    setTimeout(() => setAnimatingId(null), 500); // Remove animation class after animation ends
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <header className="bg-primary text-primary-foreground py-2 px-4 flex items-center">
-        <Link href="#" className="flex items-center gap-2" prefetch={false}>
-          <StoreIcon className="w-8 h-8" />
-          <span className="text-lg font-bold">swiisspants</span>
-        </Link>
+        <StoreIcon className="w-8 h-8" />
+        <span className="text-lg font-bold">swiisspants</span>
         <div className="relative flex-1 ml-4">
-          <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search for products..."
@@ -35,16 +65,16 @@ export default function Home() {
           <h2 className="text-lg font-bold mb-2">Categories</h2>
           <div className="grid grid-cols-4 gap-4">
             <Link href="/Categories" className="flex flex-col items-center gap-1" prefetch={false}>
-              <CircuitBoardIcon className="w-8 h-8" />
-              <span className="text-sm">Electronics</span>
+              <FontAwesomeIcon icon={faSmoking} className="w-8 h-8" />
+              <span className="text-sm">Cigarettes</span>
             </Link>
             <Link href="#" className="flex flex-col items-center gap-1" prefetch={false}>
-              <MusicIcon className="w-8 h-8" />
-              <span className="text-sm">Fashion</span>
+              <FontAwesomeIcon icon={faBreadSlice} className="w-8 h-8" />
+              <span className="text-sm">Bakery</span>
             </Link>
             <Link href="#" className="flex flex-col items-center gap-1" prefetch={false}>
-              <HomeIcon className="w-8 h-8" />
-              <span className="text-sm">Home</span>
+              <FontAwesomeIcon icon={faCookieBite} className="w-8 h-8" />
+              <span className="text-sm">Snacks</span>
             </Link>
             <Link href="#" className="flex flex-col items-center gap-1" prefetch={false}>
               <GemIcon className="w-8 h-8" />
@@ -55,50 +85,48 @@ export default function Home() {
         <section className="py-4 px-4">
           <h2 className="text-lg font-bold mb-2">Featured Products</h2>
           <div className="grid grid-cols-2 gap-4">
-            <Link href="#" className="bg-background rounded-md overflow-hidden" prefetch={false}>
-              <img
-                src="/placeholder.svg"
-                alt="Product Image"
-                width={200}
-                height={200}
-                className="w-full h-40 object-cover"
-                style={{ aspectRatio: "200/200", objectFit: "cover" }}
-              />
-              <div className="p-2">
-                <h3 className="text-sm font-medium">Product Name</h3>
-                <p className="text-xs text-muted-foreground">Product Description</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm font-bold">R99.99</span>
-                  <Button size="sm" variant="outline">
-                    Add to Cart
-                  </Button>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="bg-background rounded-md overflow-hidden">
+                  <Skeleton className="w-full h-40" />
+                  <div className="p-2">
+                    <Skeleton className="h-4 w-3/4 mb-2" />
+                    <div className="flex items-center justify-between mt-2">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-5 w-5" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
-            <Link href="#" className="bg-background rounded-md overflow-hidden" prefetch={false}>
-              <img
-                src="/placeholder.svg"
-                alt="Product Image"
-                width={200}
-                height={200}
-                className="w-full h-40 object-cover"
-                style={{ aspectRatio: "200/200", objectFit: "cover" }}
-              />
-              <div className="p-2">
-                <h3 className="text-sm font-medium">Product Name</h3>
-                <p className="text-xs text-muted-foreground">Product Description</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm font-bold">R199.99</span>
-                  <Button size="sm" variant="outline">
-                    Add to Cart
-                  </Button>
+              ))
+            ) : (
+              products.map((product) => (
+                <div key={product.id} className="bg-background rounded-md overflow-hidden">
+                  <img
+                    src={product.imageURL}
+                    alt={product.name}
+                    width={200}
+                    height={200}
+                    className="w-full h-40 object-cover"
+                    style={{ aspectRatio: "200/200", objectFit: "cover" }}
+                  />
+                  <div className="p-2">
+                    <h3 className="text-sm font-medium">{product.name}</h3>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-bold">R{product.price}</span>
+                      <AddShoppingCartIcon
+                        className={`w-5 h-5 text-muted-foreground cursor-pointer ${animatingId === product.id ? 'bounce-animation' : ''}`}
+                        onClick={() => handleAddToCart(product)}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              ))
+            )}
           </div>
         </section>
       </main>
-
     </div>
-  )
-}
+  );
+};
+
+export default Home;

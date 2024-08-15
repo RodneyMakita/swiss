@@ -1,7 +1,4 @@
-// src/components/component/Navbar.tsx
-
-'use client';
-
+import { useState, useEffect } from 'react';
 import { FaHome as HomeIcon, FaList as ListIcon, FaShoppingCart as ShoppingCartIcon, FaUser as UserIcon } from 'react-icons/fa';
 
 interface NavbarProps {
@@ -9,12 +6,36 @@ interface NavbarProps {
 }
 
 const Navbar = ({ onSectionChange }: NavbarProps) => {
+  const [scrollY, setScrollY] = useState(0);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > scrollY) {
+        setHidden(true);  // Hide navbar on scroll down
+      } else {
+        setHidden(false); // Show navbar on scroll up
+      }
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrollY]);
+
   const handleNavigation = (section: string) => {
     onSectionChange(section); // Notify parent component
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around py-2 z-50 shadow-lg">
+    <nav
+      className={`fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around py-2 z-50 shadow-lg transition-transform duration-300 ${
+        hidden ? 'transform translate-y-full' : 'transform translate-y-0'
+      }`}
+    >
       <button
         className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground"
         onClick={() => handleNavigation('home')}
