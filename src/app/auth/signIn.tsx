@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Logo from '@/assets/swiisspants-logo.png'
+import Logo from '@/assets/swiisspants-logo.png';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Label } from "@/components/ui/label";
@@ -7,8 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@nextui-org/react";
-import { auth } from "@/app/firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase"; // Import googleProvider
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  sendPasswordResetEmail,
+  signInWithPopup,
+} from "firebase/auth";
 
 export function SignInLoginIn() {
   const router = useRouter(); // Initialize router for redirection
@@ -31,17 +37,7 @@ export function SignInLoginIn() {
       router.push('/'); // Redirect after successful sign-up
     } catch (err) {
       console.error('Error during sign-up:', err);
-      if (err instanceof Error) {
-        if (err.message.includes('email')) {
-          setError('Email already in use. Please use a different email.');
-        } else if (err.message.includes('password')) {
-          setError('Password is too weak. Please choose a stronger password.');
-        } else {
-          setError('Sign-up failed. Please try again.');
-        }
-      } else {
-        setError('An unknown error occurred. Please try again.');
-      }
+      setError('Sign-up failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -55,22 +51,25 @@ export function SignInLoginIn() {
       router.push('/'); // Redirect after successful sign-in
     } catch (error) {
       console.error("Authentication error:", error);
-      if (error instanceof Error) {
-        if (error.message.includes('user-not-found')) {
-          setError('Account does not exist. Please check your email or sign up.');
-        } else if (error.message.includes('wrong-password')) {
-          setError('Incorrect password. Please try again.');
-        } else {
-          setError('Account does not exist. Please check your email or sign up.');
-        }
-      } else {
-        setError('An unknown error occurred. Please try again.');
-      }
+      setError('Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Google Sign-in successful:', result.user);
+      router.push('/'); // Redirect after successful sign-in
+    } catch (error) {
+      console.error('Google Sign-in error:', error);
+      setError('Google Sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleForgotPassword = async () => {
     setLoading(true);
@@ -201,6 +200,9 @@ export function SignInLoginIn() {
               <Button type="submit" className="w-full">
                 {isSignUp ? "Sign up" : "Sign in"}
               </Button>
+              <Button type="button" onClick={handleGoogleSignIn} className="w-full mt-4 bg-red-500 text-white">
+                Sign in with Google
+              </Button>
             </div>
           </form>
         )}
@@ -211,50 +213,38 @@ export function SignInLoginIn() {
               <p className="text-sm text-muted-foreground">
                 Enter your email address and we'll send you a link to reset your password.
               </p>
-              <div>
-                <Label htmlFor="reset-email" className="sr-only">
-                  Email address
-                </Label>
-                <Input
-                  id="reset-email"
-                  name="reset-email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="relative block w-full rounded-md border-0 py-1.5 text-foreground ring-1 ring-inset ring-muted placeholder:text-muted-foreground focus:z-10 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div>
-                <Button type="button" className="w-full" onClick={handleForgotPassword}>
-                  Reset password
+              <Input
+                id="forgot-password-email"
+                name="forgot-password-email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <Button onClick={handleForgotPassword} className="w-full">
+                Send password reset link
+              </Button>
+              <div className="flex justify-center">
+                <Button variant="ghost" onClick={() => setShowForgotPassword(false)}>
+                  Go back to {isSignUp ? "Sign up" : "Sign in"}
                 </Button>
-              </div>
-              {resetEmailSent && (
-                <div className="text-sm text-green-500">
-                  An email has been sent to {email} with instructions to reset your password.
-                </div>
-              )}
-              <div className="text-sm text-center">
-                <button
-                  type="button"
-                  className="font-medium text-primary hover:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  onClick={() => setShowForgotPassword(false)}
-                >
-                  Login to your account
-                </button>
               </div>
             </div>
           </div>
         )}
         {error && (
-          <div className="text-red-500 text-center mt-4">
+          <div className="mt-4 text-center text-sm text-red-600">
             {error}
+          </div>
+        )}
+        {resetEmailSent && (
+          <div className="mt-4 text-center text-sm text-green-600">
+            Password reset email sent. Please check your inbox.
           </div>
         )}
       </div>
     </div>
   );
 }
+
+export default SignInLoginIn;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaHome as HomeIcon, FaList as ListIcon, FaShoppingCart as ShoppingCartIcon, FaUser as UserIcon } from 'react-icons/fa';
+import { useCart } from '@/app/backend/CartContext';
 
 interface NavbarProps {
   onSectionChange: (section: string) => void;
@@ -8,6 +9,10 @@ interface NavbarProps {
 const Navbar = ({ onSectionChange }: NavbarProps) => {
   const [scrollY, setScrollY] = useState(0);
   const [hidden, setHidden] = useState(false);
+  const { cart } = useCart(); // Access cart from the context
+
+  // Calculate total quantity of items in the cart
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,10 +56,15 @@ const Navbar = ({ onSectionChange }: NavbarProps) => {
         <span className="text-xs">Categories</span>
       </button>
       <button
-        className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground"
+        className="relative flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground"
         onClick={() => handleNavigation('cart')}
       >
         <ShoppingCartIcon className="w-6 h-6 text-[#111827]" />
+        {totalItems > 0 && (
+          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+            {totalItems}
+          </span>
+        )}
         <span className="text-xs">Cart</span>
       </button>
       <button

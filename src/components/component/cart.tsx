@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
-import { useCart } from '@/app/backend/CartContext';
-import { User } from 'firebase/auth';
-import { collection, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import '@/app/globals.css';
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
+import { useCart } from "@/app/backend/CartContext";
+import { User } from "firebase/auth";
+import { collection, onSnapshot, setDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import "@/app/globals.css";
 
 interface CartItem {
   id: string;
@@ -23,23 +29,31 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
-  const { cart, updateQuantity, removeFromCart, clearCart, setCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart, setCart } =
+    useCart();
   const [loading, setLoading] = useState(true);
-  const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalCost = cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
 
   useEffect(() => {
     if (user) {
-      const cartRef = collection(db, 'users', user.uid, 'cart');
-      
+      const cartRef = collection(db, "users", user.uid, "cart");
+
       // Listen for real-time updates to the cart
-      const unsubscribe = onSnapshot(cartRef, (snapshot) => {
-        const cartItems = snapshot.docs.map((doc) => doc.data() as CartItem);
-        setCart(cartItems);
-        setLoading(false); // Stop loading when data is fetched
-      }, (error) => {
-        console.error('Error fetching cart items:', error);
-        setLoading(false);
-      });
+      const unsubscribe = onSnapshot(
+        cartRef,
+        (snapshot) => {
+          const cartItems = snapshot.docs.map((doc) => doc.data() as CartItem);
+          setCart(cartItems);
+          setLoading(false); // Stop loading when data is fetched
+        },
+        (error) => {
+          console.error("Error fetching cart items:", error);
+          setLoading(false);
+        },
+      );
 
       // Clean up the listener on unmount
       return () => unsubscribe();
@@ -48,7 +62,7 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
 
   useEffect(() => {
     if (user && cart.length > 0) {
-      cart.forEach(item => {
+      cart.forEach((item) => {
         saveCartItemToFirestore(user, item);
       });
     }
@@ -64,10 +78,10 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
 
   const saveCartItemToFirestore = async (user: User, item: CartItem) => {
     try {
-      const cartRef = collection(db, 'users', user.uid, 'cart');
+      const cartRef = collection(db, "users", user.uid, "cart");
       await setDoc(doc(cartRef, item.id), item);
     } catch (error) {
-      console.error('Error saving cart item:', error);
+      console.error("Error saving cart item:", error);
     }
   };
 
@@ -87,8 +101,12 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
       {cart.length === 0 ? (
         <div className="border border-dashed shadow-sm rounded-lg flex flex-col items-center justify-center p-4 md:p-8">
           <div className="flex flex-col items-center gap-2">
-            <h3 className="font-bold text-xl md:text-2xl">Your cart is empty</h3>
-            <p className="text-sm text-muted-foreground">Add some items to your cart to get started.</p>
+            <h3 className="font-bold text-xl md:text-2xl">
+              Your cart is empty
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Add some items to your cart to get started.
+            </p>
             <Button className="mt-4" onClick={onContinueShopping}>
               Continue Shopping
             </Button>
@@ -109,13 +127,17 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium text-lg">{item.name}</h3>
-                  <div className="text-sm text-muted-foreground">R{item.price.toFixed(2)}</div>
+                  <div className="text-sm text-muted-foreground">
+                    R{item.price.toFixed(2)}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                    onClick={() =>
+                      handleUpdateQuantity(item.id, item.quantity - 1)
+                    }
                     disabled={item.quantity <= 1}
                   >
                     <FaMinus className="w-5 h-5" />
@@ -124,11 +146,17 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                    onClick={() =>
+                      handleUpdateQuantity(item.id, item.quantity + 1)
+                    }
                   >
                     <FaPlus className="w-5 h-5" />
                   </Button>
-                  <Button size="icon" variant="ghost" onClick={() => handleRemoveFromCart(item.id)}>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleRemoveFromCart(item.id)}
+                  >
                     <FaTrash className="w-5 h-5" />
                   </Button>
                 </div>
@@ -158,7 +186,11 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col md:flex-row gap-2">
-              <Button variant="outline" className="flex-1" onClick={onContinueShopping}>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={onContinueShopping}
+              >
                 Continue Shopping
               </Button>
               <Button className="flex-1">Proceed to Checkout</Button>
