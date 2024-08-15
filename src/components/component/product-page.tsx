@@ -5,12 +5,13 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/app/backend/CartContext';
+import { Product } from '@/app/types/product';
 
 interface ProductPageProps {
   product: {
     id: string;
     name: string;
-    price: string;
+    price: number;
     imageURL: string;
     description: string;
     reviews: {
@@ -53,21 +54,21 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
               <span className="text-4xl font-bold">R{product.price}</span>
               <div className="flex items-center gap-2">
                 <Label htmlFor="quantity" className="text-base">Quantity</Label>
-                <Select
-                  value={quantity.toString()}
-                  onValueChange={(value) => setQuantity(parseInt(value))}
-                  id="quantity"
-                  className="w-24"
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5].map(val => (
-                      <SelectItem key={val} value={val.toString()}>{val}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="w-24"> {/* Container for styling */}
+                  <Select
+                    value={quantity.toString()}
+                    onValueChange={(value) => setQuantity(parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5].map(val => (
+                        <SelectItem key={val} value={val.toString()}>{val}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <Button size="lg" onClick={handleAddToCart}>Add to Cart</Button>

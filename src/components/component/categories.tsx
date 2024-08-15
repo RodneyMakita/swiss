@@ -5,22 +5,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSmoking, faBreadSlice, faCookieBite } from "@fortawesome/free-solid-svg-icons";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/app/firebase";
-import FeaturedProducts from "../component/FeaturedProducts"; // Import the FeaturedProducts component
-import { useCart } from "@/app/backend/CartContext"; // Import useCart hook
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  imageURL: string;
-}
+import FeaturedProducts from "../component/FeaturedProducts";
+import { useCart } from "@/app/backend/CartContext";
+import { Product } from "@/app/types/product"; // Import the shared Product type
 
 export default function Categories() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [animatingId, setAnimatingId] = useState<string | null>(null);
 
-  // Get cart context
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -40,8 +33,8 @@ export default function Categories() {
 
   const handleAddToCart = (product: Product) => {
     addToCart({ ...product, quantity: 1 });
-    setAnimatingId(product.id); // Trigger animation
-    setTimeout(() => setAnimatingId(null), 500); // Remove animation class after animation ends
+    setAnimatingId(product.id);
+    setTimeout(() => setAnimatingId(null), 500);
   };
 
   return (

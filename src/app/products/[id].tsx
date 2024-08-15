@@ -6,7 +6,7 @@ import { useCart } from '@/app/backend/CartContext'; // Adjust path if needed
 interface Product {
   id: string;
   name: string;
-  price: string;
+  price: number;
   imageURL: string;
   description: string;
   reviews: {
@@ -31,7 +31,7 @@ const ProductDetailPage = () => {
         const productData: Product = {
           id: productId,
           name: 'Acme Prism T-Shirt',
-          price: '49.99',
+          price: 49.99,
           imageURL: '/tshirt.png',
           description: 'A stylish and comfortable t-shirt.',
           reviews: [

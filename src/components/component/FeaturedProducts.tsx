@@ -2,13 +2,7 @@ import React from 'react';
 import { Skeleton } from '@nextui-org/react';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  imageURL: string;
-}
+import { Product } from "@/app/types/product"; // Use the imported Product type
 
 interface FeaturedProductsProps {
   products: Product[];
