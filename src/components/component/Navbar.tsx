@@ -1,3 +1,5 @@
+'use client'; // Add this line
+
 import { useState, useEffect } from 'react';
 import { FaHome as HomeIcon, FaList as ListIcon, FaShoppingCart as ShoppingCartIcon, FaUser as UserIcon } from 'react-icons/fa';
 import { useCart } from '@/app/backend/CartContext';

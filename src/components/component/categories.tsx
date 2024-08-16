@@ -1,3 +1,5 @@
+'use client'; 
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { GemIcon, ClubIcon, ApertureIcon } from "../icons";
@@ -8,7 +10,6 @@ import { db } from "@/app/firebase";
 import FeaturedProducts from "../component/FeaturedProducts";
 import { useCart } from "@/app/backend/CartContext";
 import { Product } from "@/app/types/product"; // Import the shared Product type
-
 export default function Categories() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

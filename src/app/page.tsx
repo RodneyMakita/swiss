@@ -12,7 +12,6 @@ import SlideToRefreshProvider from '@/components/component/SlideToRefreshProvide
 import { SignInLoginIn } from './auth/signIn';
 import '@/app/globals.css';
 
-
 const AppContent: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>('home');
   const { isAuthenticated, user } = useAuth();

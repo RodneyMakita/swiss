@@ -1,3 +1,5 @@
+'use client'; // Add this line
+
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +24,14 @@ interface Product {
   name: string;
   price: number;
   imageURL: string;
+  description: string;
+  reviews: {
+    id: string;
+    name: string;
+    date: string;
+    rating: number;
+    comment: string;
+  }[];
 }
 
 const Home: React.FC = () => {

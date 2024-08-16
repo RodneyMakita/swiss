@@ -1,3 +1,6 @@
+// Cart.tsx
+'use client';
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,8 +32,7 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
-  const { cart, updateQuantity, removeFromCart, clearCart, setCart } =
-    useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart, setCart } = useCart();
   const [loading, setLoading] = useState(true);
   const totalCost = cart.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -46,8 +48,9 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
         cartRef,
         (snapshot) => {
           const cartItems = snapshot.docs.map((doc) => doc.data() as CartItem);
+          console.log('Fetched cart items:', cartItems); // Debugging line
           setCart(cartItems);
-          setLoading(false); // Stop loading when data is fetched
+          setLoading(false);
         },
         (error) => {
           console.error("Error fetching cart items:", error);

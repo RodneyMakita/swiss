@@ -1,8 +1,10 @@
+'use client'; 
+
 import React from 'react';
 import { Skeleton } from '@nextui-org/react';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
-import { Product } from "@/app/types/product"; // Use the imported Product type
+import { Product } from "@/app/types/product";
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -32,7 +34,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, 
         ) : (
           products.map((product) => (
             <div key={product.id} className="bg-background rounded-md overflow-hidden shadow-md flex flex-col">
-              <Link href={`/product/${product.id}`} legacyBehavior>
+              <Link href={`/products/${product.id}`} legacyBehavior>
                 <a>
                   <img
                     src={product.imageURL}
@@ -40,7 +42,6 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, 
                     width={200}
                     height={200}
                     className="w-full h-40 object-cover"
-                    style={{ aspectRatio: '200/200', objectFit: 'cover' }}
                   />
                   <div className="p-2 flex-1 flex flex-col justify-between">
                     <h3 className="text-sm font-medium truncate">{product.name}</h3>

@@ -1,4 +1,6 @@
-// app/layout.tsx
+'use client'; // Add this line
+
+import { CartProvider } from '@/app/backend/CartContext';
 import { Germania_One } from 'next/font/google';
 
 const germaniaOne = Germania_One({
@@ -14,7 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={germaniaOne.className}>
-      <body>{children}</body>
+      <body>
+      <CartProvider>
+        {children}
+        </CartProvider></body>
     </html>
   );
 }

@@ -1,11 +1,17 @@
+'use client';
+
+import Link from 'next/link';
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button'; 
+import { Button } from "@nextui-org/react";
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/app/backend/CartContext';
 import { Product } from '@/app/types/product';
+import '@/app/globals.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 interface ProductPageProps {
   product: {
@@ -27,13 +33,30 @@ interface ProductPageProps {
 const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const handleAddToCart = () => {
-    addToCart({ ...product, quantity });
+  const handleAddToCart = async () => {
+    setLoading(true);
+    try {
+      await addToCart({ ...product, quantity });
+      console.log('Item added to cart');
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="w-full">
+      <header className="bg-primary text-primary-foreground py-2 px-4 flex items-center h-14">
+        <Link href="/" className="flex items-center gap-2" prefetch={false}>
+          <FontAwesomeIcon icon={faArrowLeft} className="text-xl" />
+          <span className="text-lg font-bold ml-2">{product.name}</span>
+        </Link>
+      </header>
+      
+      {/* Main Content */}
       <section className="grid md:grid-cols-2 gap-6 lg:gap-12 items-start max-w-6xl px-4 mx-auto py-12 md:py-16 lg:py-24">
         <div className="grid gap-4">
           <img
@@ -71,7 +94,14 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
                 </div>
               </div>
             </div>
-            <Button size="lg" onClick={handleAddToCart}>Add to Cart</Button>
+            <Button 
+              size="lg" 
+              onClick={handleAddToCart} 
+              isLoading={loading}
+              disabled={loading} // Disable the button while loading
+            >
+              {loading ? 'Adding...' : 'Add to Cart'}
+            </Button>
           </div>
         </div>
       </section>
@@ -86,7 +116,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
           <div className="grid gap-4">
             <h2 className="text-3xl sm:text-4xl font-bold">Customer Reviews</h2>
             <div className="mx-auto px-4 md:px-6 max-w-2xl grid gap-12">
-              {product.reviews.map((review) => (
+              {(Array.isArray(product.reviews) ? product.reviews : []).map((review) => (
                 <div key={review.id} className="flex gap-4">
                   <Avatar className="w-10 h-10 border">
                     <AvatarImage src="/placeholder-user.jpg" alt={review.name} />
