@@ -1,29 +1,30 @@
 'use client';
 
-
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // Ensure this import is correct
+import { useParams } from 'next/navigation'; 
 import { getDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Adjust path to your Firebase setup
-import ProductPage from '@/components/component/product-page'; // Ensure this path is correct
+import { db } from '@/lib/firebase';
+import ProductPage from '@/components/component/product-page';
 import type { Product } from '@/app/types/product';
 import Loader from '@/components/component/Loader';
 
-
 const ProductPageById = () => {
-  const { id } = useParams();
+  const { id } = useParams();  
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
+    const productId = Array.isArray(id) ? id[0] : id; // Ensure id is a string
+
+    if (productId) {
       const fetchProduct = async () => {
         try {
-          const docRef = doc(db, 'products', id as string);
+          const docRef = doc(db, 'products', productId as string);
           const docSnap = await getDoc(docRef);
 
           if (docSnap.exists()) {
-            setProduct(docSnap.data() as Product);
+            const productData = docSnap.data() as Omit<Product, 'id'>;
+            setProduct({ id: productId, ...productData }); // Use productId here
           } else {
             console.log("No such product!");
           }
@@ -35,11 +36,13 @@ const ProductPageById = () => {
       };
 
       fetchProduct();
+    } else {
+      setLoading(false);
     }
   }, [id]);
 
   if (loading) {
-    return <Loader />; // Use the Loader component here
+    return <Loader />;
   }
 
   if (!product) {

@@ -62,6 +62,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [userUID]);
 
   const addToCart = async (item: CartItem) => {
+    if (!item.id) {
+      console.error('Cart item is missing an ID:', item);
+      return;
+    }
+
     if (userUID) {
       try {
         const itemRef = doc(db, 'users', userUID, 'cart', item.id);

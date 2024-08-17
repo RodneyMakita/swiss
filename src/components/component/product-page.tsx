@@ -15,9 +15,14 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  console.log('Product:', product); // Debugging line
+
   const handleAddToCart = async () => {
     setLoading(true);
     try {
+      if (!product.id) {
+        throw new Error('Product ID is missing');
+      }
       await addToCart({ ...product, quantity });
       console.log('Item added to cart');
     } catch (error) {
