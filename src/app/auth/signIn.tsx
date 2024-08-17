@@ -37,7 +37,7 @@ export function SignInLoginIn() {
       router.push('/'); // Redirect after successful sign-up
     } catch (err) {
       console.error('Error during sign-up:', err);
-      setError('Sign-up failed. Please try again.');
+      setError('Sign-up failed. Please check your details and try again.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export function SignInLoginIn() {
       router.push('/'); // Redirect after successful sign-in
     } catch (error) {
       console.error("Authentication error:", error);
-      setError('Sign-in failed. Please try again.');
+      setError('Sign-in failed. Please check your email and password and try again.');
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export function SignInLoginIn() {
       console.log('Password reset email sent');
     } catch (error) {
       console.error('Error sending password reset email:', error);
-      setError('Failed to send password reset email. Please try again.');
+      setError('Failed to send password reset email. Please check your email and try again.');
     } finally {
       setLoading(false);
     }
@@ -120,7 +120,7 @@ export function SignInLoginIn() {
               {isSignUp ? "Already have an account?" : "Don't have an account?"}
               <button
                 type="button"
-                className="font-medium text-black hover:text-muted-foreground "
+                className="font-medium text-black hover:text-muted-foreground"
                 onClick={() => setIsSignUp(!isSignUp)}
               >
                 {isSignUp ? "Sign in" : "Sign up"}
@@ -214,38 +214,37 @@ export function SignInLoginIn() {
               <p className="text-sm text-muted-foreground">
                 Enter your email address and we'll send you a link to reset your password.
               </p>
-              <Input
-                id="forgot-password-email"
-                name="forgot-password-email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <Button onClick={handleForgotPassword} className="w-full">
-                Send password reset link
-              </Button>
-              <div className="flex justify-center">
-                <Button variant="ghost" onClick={() => setShowForgotPassword(false)}>
-                  Go back to {isSignUp ? "Sign up" : "Sign in"}
-                </Button>
-              </div>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleForgotPassword();
+              }}>
+                <Label htmlFor="reset-email-address">Email address</Label>
+                <Input
+                  id="reset-email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="w-full py-1.5 text-foreground ring-1 ring-inset ring-muted placeholder:text-muted-foreground sm:text-sm sm:leading-6"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Button type="submit" className="w-full mt-4">Send Reset Link</Button>
+                {resetEmailSent && (
+                  <p className="mt-2 text-sm text-green-500">Password reset email sent! Check your inbox.</p>
+                )}
+                {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+              </form>
             </div>
           </div>
         )}
-        {error && (
-          <div className="mt-4 text-center text-sm text-red-600">
+        {error && !showForgotPassword && (
+          <div className="text-red-500 text-center mt-4">
             {error}
-          </div>
-        )}
-        {resetEmailSent && (
-          <div className="mt-4 text-center text-sm text-green-600">
-            Password reset email sent. Please check your inbox.
           </div>
         )}
       </div>
     </div>
   );
 }
-
-export default SignInLoginIn;

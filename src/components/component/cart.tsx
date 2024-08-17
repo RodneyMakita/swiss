@@ -3,28 +3,12 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCart } from "@/app/backend/CartContext";
 import { User } from "firebase/auth";
-import { collection, onSnapshot, setDoc, doc , deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import "@/app/globals.css";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  imageURL: string;
-}
 
 interface CartProps {
   onContinueShopping: () => void;
@@ -41,69 +25,27 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
 
   useEffect(() => {
     if (user) {
-      const cartRef = collection(db, "users", user.uid, "cart");
-
-      // Listen for real-time updates to the cart
-      const unsubscribe = onSnapshot(
-        cartRef,
-        (snapshot) => {
-          const cartItems = snapshot.docs.map((doc) => doc.data() as CartItem);
-          console.log('Fetched cart items:', cartItems); // Debugging line
-          setCart(cartItems);
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Error fetching cart items:", error);
-          setLoading(false);
-        },
-      );
-
-      // Clean up the listener on unmount
-      return () => unsubscribe();
+      // Firestore cart will be managed via CartContext
+      setLoading(false); // Assuming loading state is handled via CartContext
+    } else {
+      console.error('User is not authenticated');
+      setLoading(false);
     }
-  }, [user, setCart]);
-
-  useEffect(() => {
-    if (user && cart.length > 0) {
-      cart.forEach((item) => {
-        saveCartItemToFirestore(user, item);
-      });
-    }
-  }, [cart, user]);
+  }, [user]);
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     updateQuantity(id, quantity);
   };
 
-  // Updated removeFromCart function
-const handleRemoveFromCart = async (id: string) => {
-  if (user?.uid) { // Ensure user.uid is not undefined
-    try {
-      const itemRef = doc(db, "users", user.uid, "cart", id); // Correct usage of doc()
-      await deleteDoc(itemRef); // Deletes the document from Firestore
-      removeFromCart(id); // Updates the local state
-    } catch (error) {
-      console.error("Error removing item from cart:", error);
-    }
-  } else {
-    console.error("User ID is undefined.");
-  }
-};
-  const saveCartItemToFirestore = async (user: User, item: CartItem) => {
-    try {
-      const cartRef = collection(db, "users", user.uid, "cart");
-      await setDoc(doc(cartRef, item.id), item);
-    } catch (error) {
-      console.error("Error saving cart item:", error);
-    }
+  const handleRemoveFromCart = (id: string) => {
+    removeFromCart(id);
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loader mx-auto mb-6">
-          <span>swiisspants</span>
-          <span>swiisspants</span>
+          <span>Loading...</span>
         </div>
       </div>
     );
@@ -176,39 +118,20 @@ const handleRemoveFromCart = async (id: string) => {
               </div>
             ))}
           </div>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>R{totalCost.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-medium">
-                  <span>Total</span>
-                  <span>R{totalCost.toFixed(2)}</span>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col md:flex-row gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={onContinueShopping}
-              >
-                Continue Shopping
-              </Button>
-              <Button className="flex-1">Proceed to Checkout</Button>
-            </CardFooter>
-          </Card>
+          <Separator className="my-4" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-lg font-semibold">Total: R{totalCost.toFixed(2)}</div>
+            <Button className="mt-4 md:mt-0" onClick={clearCart}>
+              Clear Cart
+            </Button>
+            <Button
+              className="mt-4 md:mt-0"
+              variant="default"
+              onClick={() => alert('Proceeding to checkout...')}
+            >
+              Checkout
+            </Button>
+          </div>
         </>
       )}
     </div>
