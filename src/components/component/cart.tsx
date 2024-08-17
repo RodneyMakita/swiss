@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCart } from "@/app/backend/CartContext";
 import { User } from "firebase/auth";
-import { collection, onSnapshot, setDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, setDoc, doc , deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import "@/app/globals.css";
 
@@ -75,10 +75,20 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
     updateQuantity(id, quantity);
   };
 
-  const handleRemoveFromCart = (id: string) => {
-    removeFromCart(id);
-  };
-
+  // Updated removeFromCart function
+const handleRemoveFromCart = async (id: string) => {
+  if (user?.uid) { // Ensure user.uid is not undefined
+    try {
+      const itemRef = doc(db, "users", user.uid, "cart", id); // Correct usage of doc()
+      await deleteDoc(itemRef); // Deletes the document from Firestore
+      removeFromCart(id); // Updates the local state
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
+  } else {
+    console.error("User ID is undefined.");
+  }
+};
   const saveCartItemToFirestore = async (user: User, item: CartItem) => {
     try {
       const cartRef = collection(db, "users", user.uid, "cart");
