@@ -108,6 +108,7 @@ export function SignInLoginIn() {
             src={Logo}
             alt="Company Logo"
             className="mx-auto h-auto w-auto mb-20"
+            priority
           />
           {!showForgotPassword && (
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
@@ -115,11 +116,11 @@ export function SignInLoginIn() {
             </h2>
           )}
           {!showForgotPassword && (
-            <p className="mt-2 text-center text-sm text-muted-foreground">
+            <p className="mt-2 text-center text-sm text-black">
               {isSignUp ? "Already have an account?" : "Don't have an account?"}
               <button
                 type="button"
-                className="font-medium text-primary hover:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="font-medium text-black hover:text-muted-foreground "
                 onClick={() => setIsSignUp(!isSignUp)}
               >
                 {isSignUp ? "Sign in" : "Sign up"}
@@ -140,7 +141,7 @@ export function SignInLoginIn() {
                     autoComplete="name"
                     required
                     className="relative block w-full rounded-t-md border-0 py-1.5 text-foreground ring-1 ring-inset ring-muted placeholder:text-muted-foreground focus:z-10 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
-                    placeholder="John Doe"
+                    placeholder="Rodney Timba"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
@@ -182,14 +183,14 @@ export function SignInLoginIn() {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Checkbox id="remember-me" name="remember-me" />
-                <Label htmlFor="remember-me" className="ml-2 block text-sm text-muted-foreground">
+                <Label htmlFor="remember-me" className="ml-2 block text-sm text-black">
                   Remember me
                 </Label>
               </div>
               <div className="text-sm">
                 <button
                   type="button"
-                  className="font-medium text-primary hover:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="font-medium text-black hover:text-muted-foreground"
                   onClick={() => setShowForgotPassword(!showForgotPassword)}
                 >
                   Forgot your password?
