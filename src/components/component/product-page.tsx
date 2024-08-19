@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@nextui-org/react";
 import { useCart } from '@/app/backend/CartContext';
 import { Product } from '@/app/types/product';
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
       
       <section className="grid md:grid-cols-2 gap-6 lg:gap-12 items-start max-w-6xl px-4 mx-auto py-12 md:py-16 lg:py-24">
         <div className="grid gap-4">
-          <img
+          <Image
             src={product.imageURL}
             alt={product.name}
             width={600}

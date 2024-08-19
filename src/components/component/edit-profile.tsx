@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { storage } from '@/lib/firebase'; // Ensure you import your Firebase storage
+import React, { useState, useEffect } from 'react';
+import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '@/app/auth/AuthContext'; // Import your auth context
-import Image from 'next/image';
+import { useAuth } from '@/app/auth/AuthContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface EditProfileProps {
   setIsEditing: (isEditing: boolean) => void;
@@ -15,10 +19,20 @@ interface EditProfileProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = ({ setIsEditing, displayName, email, avatarUrl }) => {
-  const { user } = useAuth(); // Get the authenticated user from context
+  const { user } = useAuth();
   const [newDisplayName, setNewDisplayName] = useState(displayName);
+  const [newEmail, setNewEmail] = useState(email || ''); // Default to empty if not provided
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      // Set the email only if it's not already set
+      if (!newEmail && user.email) {
+        setNewEmail(user.email);
+      }
+    }
+  }, [user, newEmail]);
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -28,64 +42,71 @@ export const EditProfile: React.FC<EditProfileProps> = ({ setIsEditing, displayN
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (newAvatar && user) { // Ensure `user` is defined and authenticated
+    if (user) {
       try {
         setUploading(true);
-        console.log('User:', user); // Check if user is defined
-        console.log('File Path:', `avatars/${user.uid}/${newAvatar.name}`);
-        const avatarRef = ref(storage, `avatars/${user.uid}/${newAvatar.name}`);
-        await uploadBytes(avatarRef, newAvatar);
-        const url = await getDownloadURL(avatarRef);
 
-        // Update the user's profile with the new avatar URL
-        await updateProfile(user, { photoURL: url });
+        let newAvatarUrl: string | null = avatarUrl;
+        if (newAvatar) {
+          const avatarRef = ref(storage, `avatars/${user.uid}/${newAvatar.name}`);
+          await uploadBytes(avatarRef, newAvatar);
+          newAvatarUrl = await getDownloadURL(avatarRef);
+        }
+
         await setDoc(doc(db, 'users', user.uid), {
           displayName: newDisplayName,
-          email: user.email,
-          avatarUrl: url,
+          email: newEmail,
+          avatarUrl: newAvatarUrl,
         }, { merge: true });
 
-        console.log('Profile updated with new avatar URL');
+        await updateProfile(user, { displayName: newDisplayName, photoURL: newAvatarUrl });
+
+        console.log('Profile updated successfully');
       } catch (error) {
-        console.error('Error uploading avatar:', error);
+        console.error('Error updating profile:', error);
       } finally {
         setUploading(false);
       }
     } else {
-      console.error('User not authenticated or no avatar selected');
+      console.error('User not authenticated');
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>
-            Display Name:
-            <input type="text" value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} />
-          </label>
+    <Card className="w-full max-w-3xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Edit Profile</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-6 md:grid-cols-2">
+        <div className="flex flex-col items-center gap-4">
+          <Avatar className="h-24 w-24">
+            <AvatarImage src={avatarUrl || "/placeholder-user.jpg"} alt="User Avatar" />
+            <AvatarFallback>JP</AvatarFallback>
+          </Avatar>
+          <Button variant="outline">
+            <label className="cursor-pointer">
+              Change Avatar
+              <input type="file" onChange={handleAvatarChange} hidden />
+            </label>
+          </Button>
         </div>
-        <div>
-          <label>
-            New Avatar:
-            <input type="file" onChange={handleAvatarChange} />
-          </label>
-          {avatarUrl && (
-            <img
-              src={avatarUrl || "/placeholder-user.jpg"}
-              alt="User Avatar"
-              width={48} // Adjust the width as needed
-              height={48} // Adjust the height as needed
-            />
-          )}
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Name</Label>
+            <Input id="name" type="text" value={newDisplayName} onChange={(e) => setNewDisplayName(e.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+          </div>
+          <Button className="ml-auto" onClick={handleSubmit} disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Save Changes'}
+          </Button>
         </div>
-        <button type="submit" disabled={uploading}>
-          {uploading ? 'Uploading...' : 'Save'}
-        </button>
-        <button type="button" onClick={() => setIsEditing(false)}>
-          Cancel
-        </button>
-      </form>
-    </div>
+      </CardContent>
+      <Button variant="ghost" className="ml-auto mt-4" onClick={() => setIsEditing(false)}>
+        Back
+      </Button>
+    </Card>
   );
 };

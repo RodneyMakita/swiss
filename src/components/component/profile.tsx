@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SVGProps } from 'react';
 import { useAuth } from '@/app/auth/AuthContext';
-import { doc, getDoc, setDoc } from 'firebase/firestore'; // Add setDoc here
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/app/firebase';
 import { User } from 'firebase/auth';
 import { updateProfile } from 'firebase/auth';
-import { EditProfile } from './edit-profile'; // Import the EditProfile component
+import { EditProfile } from './edit-profile';
 
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const [isEditing, setIsEditing] = useState(false); // State to manage editing mode
+  const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,6 +31,8 @@ export default function Profile() {
         } catch (error) {
           console.error('Error fetching avatar URL:', error);
         }
+      } else {
+        console.error('User is not authenticated');
       }
     };
     fetchAvatar();
@@ -38,12 +40,16 @@ export default function Profile() {
 
   const updateUserProfile = async (user: User, displayName: string) => {
     try {
-      await updateProfile(user, { displayName });
-      await setDoc(doc(db, 'users', user.uid), {
-        displayName: displayName,
-        email: user.email,
-      });
-      console.log('User profile updated');
+      if (user) {
+        await updateProfile(user, { displayName });
+        await setDoc(doc(db, 'users', user.uid), {
+          displayName: displayName,
+          email: user.email,
+        });
+        console.log('User profile updated');
+      } else {
+        console.error('User is not authenticated');
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
     }
@@ -59,7 +65,7 @@ export default function Profile() {
   };
 
   const handleEditProfileClick = () => {
-    setIsEditing(true); // Toggle to edit mode
+    setIsEditing(true);
   };
 
   if (isEditing) {
@@ -85,7 +91,7 @@ export default function Profile() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleEditProfileClick}>Edit Profile</DropdownMenuItem> {/* Set edit mode on click */}
+            <DropdownMenuItem onClick={handleEditProfileClick}>Edit Profile</DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -211,8 +217,7 @@ function CircleHelpIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
     >
       <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-      <path d="M12 17h.01" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 1.5-1 2-1.75 2.4-.55.29-.75.6-.75 1.6M12 17h.01" />
     </svg>
   );
 }
@@ -231,9 +236,9 @@ function ShoppingBagIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M6 2l1.5 6h9L18 2H6z" />
-      <path d="M2 7h20v12H2V7z" />
-      <path d="M7 14h10v6H7v-6z" />
+      <path d="M6 2l1 7h10l1-7" />
+      <path d="M5 7h14l-1.5 13.3A2 2 0 0 1 15.52 22H8.48a2 2 0 0 1-1.98-1.7L5 7z" />
+      <path d="M16 11v5a4 4 0 0 1-8 0v-5" />
     </svg>
   );
 }
@@ -272,7 +277,7 @@ function SettingsIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
     >
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a2 2 0 0 0 .6 2l1.8 1.8a2 2 0 0 1-2.8 2.8l-1.8-1.8a2 2 0 0 0-2-.6 2 2 0 0 0-1.2 1.6v2.4a2 2 0 0 1-4 0v-2.4a2 2 0 0 0-1.6-1.2h-2.4a2 2 0 0 1 0-4h2.4a2 2 0 0 0 1.6-1.2 2 2 0 0 0-.6-2L4.2 5.6a2 2 0 0 1 2.8-2.8l1.8 1.8a2 2 0 0 0 2 .6h2.4a2 2 0 0 1 0 4h-2.4a2 2 0 0 0-1.6 1.2 2 2 0 0 0 2 .6 2 2 0 0 0 1.6-1.6v-2.4a2 2 0 0 1 4 0v2.4a2 2 0 0 0 1.2 1.6h2.4a2 2 0 0 1 0 4h-2.4a2 2 0 0 0-1.6 1.2z" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-.99 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-.99-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-.99H3a2 2 0 1 1 0-4h.09c.7 0 1.32-.39 1.51-.99a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.16A1.65 1.65 0 0 0 9 5.09V5a2 2 0 1 1 4 0v.09c0 .7.39 1.32.99 1.51.61.25 1.3.14 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.16c0 .7.39 1.32.99 1.51h.09a2 2 0 1 1 0 4h-.09c-.7 0-1.32.39-1.51.99z" />
     </svg>
   );
 }
@@ -291,7 +296,7 @@ function CreditCardIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+      <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
       <path d="M2 10h20" />
     </svg>
   );
