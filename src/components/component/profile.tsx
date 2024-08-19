@@ -1,18 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SVGProps } from 'react';
 import { useAuth } from '@/app/auth/AuthContext';
-import { doc, setDoc } from 'firebase/firestore';
-import { db, auth } from '@/app/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore'; // Add setDoc here
+import { db } from '@/app/firebase';
 import { User } from 'firebase/auth';
 import { updateProfile } from 'firebase/auth';
-
+import { EditProfile } from './edit-profile'; // Import the EditProfile component
 
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const [isEditing, setIsEditing] = useState(false); // State to manage editing mode
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      if (user) {
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userDocRef);
+    
+          if (docSnap.exists()) {
+            setAvatarUrl(docSnap.data().avatarUrl || null);
+          } else {
+            console.error('No such document!');
+          }
+        } catch (error) {
+          console.error('Error fetching avatar URL:', error);
+        }
+      }
+    };
+    fetchAvatar();
+  }, [user]);
 
   const updateUserProfile = async (user: User, displayName: string) => {
     try {
@@ -30,18 +52,25 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Redirect or handle post-logout action
       console.log('Successfully signed out');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
+  const handleEditProfileClick = () => {
+    setIsEditing(true); // Toggle to edit mode
+  };
+
+  if (isEditing) {
+    return <EditProfile setIsEditing={setIsEditing} displayName={user?.displayName || ''} email={user?.email || ''} avatarUrl={avatarUrl} />;
+  }
+
   return (
     <div className="w-full max-w-md mx-auto p-4 sm:px-54 overflow-y-auto">
       <div className="bg-primary text-primary-foreground py-6 px-4 flex flex-col sm:flex-row items-center rounded-lg">
         <Avatar className="w-12 h-12 mb-4 sm:mb-0 sm:mr-4 rounded-sm">
-          <AvatarImage src="/placeholder-user.jpg" alt="User Avatar" />
+          <AvatarImage src={avatarUrl || "/placeholder-user.jpg"} alt="User Avatar" />
           <AvatarFallback>{user?.displayName?.[0] || 'JD'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 text-center sm:text-left">
@@ -56,13 +85,15 @@ export default function Profile() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Edit Profile</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleEditProfileClick}>Edit Profile</DropdownMenuItem> {/* Set edit mode on click */}
             <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Links in the Profile page */}
       <div className="grid gap-4 mt-4">
-        <Link href="#" className="bg-background rounded-lg shadow-sm overflow-hidden block">
+        <Link href="/orders" className="bg-background rounded-lg shadow-sm overflow-hidden block">
           <div className="flex items-center gap-4 p-4">
             <div className="bg-primary text-primary-foreground rounded-full p-2">
               <ShoppingBagIcon className="w-5 h-5" />
@@ -74,7 +105,7 @@ export default function Profile() {
             <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
           </div>
         </Link>
-        <Link href="#" className="bg-background rounded-lg shadow-sm overflow-hidden block">
+        <Link href="/wishlist" className="bg-background rounded-lg shadow-sm overflow-hidden block">
           <div className="flex items-center gap-4 p-4">
             <div className="bg-primary text-primary-foreground rounded-full p-2">
               <HeartIcon className="w-5 h-5 rounded-sm" />
@@ -86,26 +117,26 @@ export default function Profile() {
             <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
           </div>
         </Link>
-        <Link href="#" className="bg-background rounded-lg shadow-sm overflow-hidden block">
+        <Link href="/settings" className="bg-background rounded-lg shadow-sm overflow-hidden block">
           <div className="flex items-center gap-4 p-4">
             <div className="bg-primary text-primary-foreground rounded-full p-2">
-              <MapPinIcon className="w-5 h-5 rounded-sm" />
+              <SettingsIcon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">Addresses</h3>
-              <p className="text-sm text-muted-foreground">Manage your delivery addresses</p>
+              <h3 className="text-lg font-semibold">Settings</h3>
+              <p className="text-sm text-muted-foreground">Manage your account settings</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
           </div>
         </Link>
-        <Link href="#" className="bg-background rounded-lg shadow-sm overflow-hidden block">
+        <Link href="/payment-methods" className="bg-background rounded-lg shadow-sm overflow-hidden block">
           <div className="flex items-center gap-4 p-4">
             <div className="bg-primary text-primary-foreground rounded-full p-2">
-              <SettingsIcon className="w-5 h-5 rounded-sm" />
+              <CreditCardIcon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">Settings</h3>
-              <p className="text-sm text-muted-foreground">Customize your account settings</p>
+              <h3 className="text-lg font-semibold">Payment Methods</h3>
+              <p className="text-sm text-muted-foreground">Manage your payment methods</p>
             </div>
             <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
           </div>
@@ -146,6 +177,25 @@ function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function MoveHorizontalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 15l7-7 7 7" />
+    </svg>
+  );
+}
+
 function CircleHelpIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -167,45 +217,6 @@ function CircleHelpIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function HeartIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 1 8.5c0 2.29 1.51 4.04 3 5.5l7 7 7-7z" />
-    </svg>
-  );
-}
-
-function MapPinIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 10c0 5-9 12-9 12S3 15 3 10a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  );
-}
-
 function ShoppingBagIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -220,7 +231,28 @@ function ShoppingBagIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M6 2v1h12V2h-1M5 6h14v12H5V6zm0 2v10h14V8H5z" />
+      <path d="M6 2l1.5 6h9L18 2H6z" />
+      <path d="M2 7h20v12H2V7z" />
+      <path d="M7 14h10v6H7v-6z" />
+    </svg>
+  );
+}
+
+function HeartIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   );
 }
@@ -239,26 +271,28 @@ function SettingsIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0-6v2m6.36 3.64 1.42-1.42M21 12h-2m-3.64 6.36 1.42 1.42M12 21v-2M4.64 16.36 3.22 14.94M3 12h2m1.64-6.36L4.22 3.22" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a2 2 0 0 0 .6 2l1.8 1.8a2 2 0 0 1-2.8 2.8l-1.8-1.8a2 2 0 0 0-2-.6 2 2 0 0 0-1.2 1.6v2.4a2 2 0 0 1-4 0v-2.4a2 2 0 0 0-1.6-1.2h-2.4a2 2 0 0 1 0-4h2.4a2 2 0 0 0 1.6-1.2 2 2 0 0 0-.6-2L4.2 5.6a2 2 0 0 1 2.8-2.8l1.8 1.8a2 2 0 0 0 2 .6h2.4a2 2 0 0 1 0 4h-2.4a2 2 0 0 0-1.6 1.2 2 2 0 0 0 2 .6 2 2 0 0 0 1.6-1.6v-2.4a2 2 0 0 1 4 0v2.4a2 2 0 0 0 1.2 1.6h2.4a2 2 0 0 1 0 4h-2.4a2 2 0 0 0-1.6 1.2z" />
     </svg>
   );
 }
-function MoveHorizontalIcon(props: SVGProps<SVGSVGElement>) {
+
+function CreditCardIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      {...props
-}
-xmlns="http://www.w3.org/2000/svg"
-width="24"
-height="24"
-viewBox="0 0 24 24"
-fill="none"
-stroke="currentColor"
-strokeWidth="2"
-strokeLinecap="round"
-strokeLinejoin="round"
->
-<path d="M5 15l7-7 7 7" />
-</svg>
-);
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+      <path d="M2 10h20" />
+    </svg>
+  );
 }

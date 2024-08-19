@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@nextui-org/react";
-import { auth, googleProvider } from "@/lib/firebase"; // Import googleProvider
+import { auth, googleProvider, facebookProvider } from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -17,7 +17,7 @@ import {
 } from "firebase/auth";
 
 export function SignInLoginIn() {
-  const router = useRouter(); // Initialize router for redirection
+  const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -29,12 +29,12 @@ export function SignInLoginIn() {
 
   const handleSignUp = async () => {
     setLoading(true);
-    setError(null); // Clear any previous errors
+    setError(null);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName: name });
       console.log('User signed up and profile updated:', userCredential.user);
-      router.push('/'); // Redirect after successful sign-up
+      router.push('/');
     } catch (err) {
       console.error('Error during sign-up:', err);
       setError('Sign-up failed. Please check your details and try again.');
@@ -45,10 +45,10 @@ export function SignInLoginIn() {
 
   const handleSignIn = async () => {
     setLoading(true);
-    setError(null); // Clear any previous errors
+    setError(null);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/'); // Redirect after successful sign-in
+      router.push('/');
     } catch (error) {
       console.error("Authentication error:", error);
       setError('Sign-in failed. Please check your email and password and try again.');
@@ -62,7 +62,7 @@ export function SignInLoginIn() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       console.log('Google Sign-in successful:', result.user);
-      router.push('/'); // Redirect after successful sign-in
+      router.push('/');
     } catch (error) {
       console.error('Google Sign-in error:', error);
       setError('Google Sign-in failed. Please try again.');
@@ -71,9 +71,23 @@ export function SignInLoginIn() {
     }
   };
 
+  const handleFacebookSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, facebookProvider);
+      console.log('Facebook Sign-in successful:', result.user);
+      router.push('/');
+    } catch (error) {
+      console.error('Facebook Sign-in error:', error);
+      setError('Facebook Sign-in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleForgotPassword = async () => {
     setLoading(true);
-    setError(null); // Clear any previous errors
+    setError(null);
     try {
       await sendPasswordResetEmail(auth, email);
       setResetEmailSent(true);
@@ -203,6 +217,9 @@ export function SignInLoginIn() {
               </Button>
               <Button type="button" onClick={handleGoogleSignIn} className="w-full mt-4 bg-red-500 text-white">
                 Sign in with Google
+              </Button>
+              <Button type="button" onClick={handleFacebookSignIn} className="w-full mt-4 bg-blue-600 text-white">
+                Sign in with Facebook
               </Button>
             </div>
           </form>
