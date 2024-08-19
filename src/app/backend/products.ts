@@ -1,9 +1,9 @@
-import { firestore } from '@/lib/firebase'; // Adjust the import based on your setup
+import { db } from '@/lib/firebase'; // Adjust the import based on your setup
 import { doc, getDoc } from 'firebase/firestore';
 
 export const fetchProductById = async (id: string) => {
   try {
-    const docRef = doc(firestore, 'products', id); // Access the 'products' collection
+    const docRef = doc(db, 'products', id); // Access the 'products' collection
     const docSnap = await getDoc(docRef); // Fetch the document
 
     if (docSnap.exists()) {
