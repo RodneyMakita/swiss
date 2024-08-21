@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCart } from "@/app/backend/CartContext";
 import { User } from "firebase/auth";
+import Image from "next/image";
 import "@/app/globals.css";
 
 interface CartProps {
@@ -75,7 +76,7 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                 key={item.id}
                 className="flex flex-col md:flex-row items-center gap-4 bg-muted/20 rounded-lg p-4 md:p-6"
               >
-                <img
+                <Image
                   src={item.imageURL}
                   alt={item.name}
                   className="w-24 h-24 md:w-32 md:h-32 rounded-md object-cover"

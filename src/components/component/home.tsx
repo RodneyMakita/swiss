@@ -1,4 +1,4 @@
-'use client'; // Add this line
+'use client'; 
 
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -18,21 +18,7 @@ import GemIcon from "@/components/icons/GemIcon";
 import { Skeleton } from "@nextui-org/react";
 import Link from "next/link";
 import "@/app/globals.css";
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  imageURL: string;
-  description: string;
-  reviews: {
-    id: string;
-    name: string;
-    date: string;
-    rating: number;
-    comment: string;
-  }[];
-}
+import { Product } from "@/app/types/product"; // Make sure this import is correct
 
 const Home: React.FC = () => {
   const { addToCart } = useCart();
@@ -42,14 +28,19 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const productsCollection = collection(db, "products");
-      const snapshot = await getDocs(productsCollection);
-      const productsList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
-      setProducts(productsList);
-      setLoading(false);
+      try {
+        const productsCollection = collection(db, "products");
+        const snapshot = await getDocs(productsCollection);
+        const productsList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Product, 'id'>), // Ensure all required fields are present
+        })) as Product[];
+        setProducts(productsList);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProducts();

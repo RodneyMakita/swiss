@@ -14,7 +14,12 @@ interface FeaturedProductsProps {
   animatingId: string | null;
 }
 
-const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, handleAddToCart, animatingId }) => {
+const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
+  products,
+  loading,
+  handleAddToCart,
+  animatingId,
+}) => {
   return (
     <section className="py-4 px-4">
       <h2 className="text-lg font-bold mb-4">Featured Products</h2>
@@ -34,7 +39,10 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, 
           ))
         ) : (
           products.map((product) => (
-            <div key={product.id} className="bg-background rounded-md overflow-hidden shadow-md flex flex-col">
+            <div
+              key={product.id}
+              className="bg-background rounded-md overflow-hidden shadow-md flex flex-col"
+            >
               <Link href={`/products/${product.id}`} legacyBehavior>
                 <a>
                   <Image
@@ -43,14 +51,19 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, 
                     width={200}
                     height={200}
                     className="w-full h-40 object-cover"
+                    // Ensure this src is valid
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   <div className="p-2 flex-1 flex flex-col justify-between">
                     <h3 className="text-sm font-medium truncate">{product.name}</h3>
+                    <span className="text-sm text-muted-foreground truncate">
+                      {product.description}
+                    </span>
                   </div>
                 </a>
               </Link>
               <div className="p-2 flex items-center justify-between mt-2">
-                <span className="text-sm font-bold">R{product.price}</span>
+                <span className="text-sm font-bold">R{product.price.toFixed(2)}</span>
                 <AddShoppingCartIcon
                   className={`w-5 h-5 text-muted-foreground cursor-pointer ${animatingId === product.id ? 'bounce-animation' : ''}`}
                   onClick={() => handleAddToCart(product)}

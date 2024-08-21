@@ -1,13 +1,9 @@
 export interface Product {
-  reviewCount: number;
-  rating: number;
-  additionalImages: never[];
   id: string;
   name: string;
   price: number;
   imageURL: string;
   description: string;
-  category: string;
   reviews: {
     id: string;
     name: string;
@@ -15,5 +11,8 @@ export interface Product {
     rating: number;
     comment: string;
   }[];
-  }
-  
+  reviewCount: number;         // Add missing property
+  rating: number;              // Add missing property
+  additionalImages: string[]; // Add missing property
+  category: string;            // Add missing property
+}
