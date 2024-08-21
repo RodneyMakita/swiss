@@ -5,6 +5,7 @@ import { Skeleton } from '@nextui-org/react';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
 import { Product } from "@/app/types/product";
+import Image from 'next/image';
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -36,7 +37,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ products, loading, 
             <div key={product.id} className="bg-background rounded-md overflow-hidden shadow-md flex flex-col">
               <Link href={`/products/${product.id}`} legacyBehavior>
                 <a>
-                  <img
+                  <Image
                     src={product.imageURL}
                     alt={product.name}
                     width={200}

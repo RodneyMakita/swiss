@@ -8,6 +8,7 @@ import Categories from '@/components/component/categories';
 import Cart from '@/components/component/cart';
 import Profile from '@/components/component/profile';  
 import { CartProvider } from '@/app/backend/CartContext';
+import { ToastProvider } from "@/components/ui/use-toast"
 import SlideToRefreshProvider from '@/components/component/SlideToRefreshProvider';
 import { SignInLoginIn } from './auth/signIn';
 import '@/app/globals.css';
@@ -58,6 +59,7 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
+    <ToastProvider>
     <AuthProvider>
       <CartProvider>
         <SlideToRefreshProvider>
@@ -65,6 +67,7 @@ const App: React.FC = () => {
         </SlideToRefreshProvider>
       </CartProvider>
     </AuthProvider>
+    </ToastProvider>
   );
 };
 

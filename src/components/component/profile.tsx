@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SVGProps } from 'react';
 import { useAuth } from '@/app/auth/AuthContext';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ChevronRightIcon } from '@heroicons/react/24/solid';
 import { db } from '@/app/firebase';
 import { User } from 'firebase/auth';
 import { updateProfile } from 'firebase/auth';
@@ -147,6 +148,21 @@ export default function Profile() {
             <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
           </div>
         </Link>
+        
+       
+        <Link href="/address" className="bg-background rounded-lg shadow-sm overflow-hidden block">
+          <div className="flex items-center gap-4 p-4">
+            <div className="bg-primary text-primary-foreground rounded-full p-2">
+              <HomeIcon className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold">Address</h3>
+              <p className="text-sm text-muted-foreground">Manage your shipping addresses</p>
+            </div>
+            <ChevronRightIcon className="w-5 h-5 text-muted-foreground" />
+          </div>
+        </Link>
+
         <Link href="#" className="bg-background rounded-lg shadow-sm overflow-hidden block">
           <div className="flex items-center gap-4 p-4">
             <div className="bg-primary text-primary-foreground rounded-full p-2">
@@ -164,7 +180,7 @@ export default function Profile() {
   );
 }
 
-function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
+function HomeIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -178,11 +194,11 @@ function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="m9 18 6-6-6-6" />
+      <path d="M20 20V10.57a1 1 0 0 0-.39-.78l-7-5.57a1 1 0 0 0-1.22 0l-7 5.57a1 1 0 0 0-.39.78V20a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2z"></path>
+      <polyline points="7 20 7 12 17 12 17 20"></polyline>
     </svg>
   );
 }
-
 function MoveHorizontalIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
@@ -197,30 +213,11 @@ function MoveHorizontalIcon(props: SVGProps<SVGSVGElement>) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M5 15l7-7 7 7" />
+      <path d="M18 8l-6 6-6-6" />
     </svg>
   );
 }
 
-function CircleHelpIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 1.5-1 2-1.75 2.4-.55.29-.75.6-.75 1.6M12 17h.01" />
-    </svg>
-  );
-}
 
 function ShoppingBagIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -298,6 +295,26 @@ function CreditCardIcon(props: SVGProps<SVGSVGElement>) {
     >
       <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
       <path d="M2 10h20" />
+    </svg>
+  );
+}
+
+function CircleHelpIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 1.5-1 2-1.75 2.4-.55.29-.75.6-.75 1.6M12 17h.01" />
     </svg>
   );
 }

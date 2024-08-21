@@ -2,6 +2,8 @@
 
 import { CartProvider } from '@/app/backend/CartContext';
 import { Germania_One } from 'next/font/google';
+import { ToastProvider } from "@/components/ui/use-toast"
+import { AuthProvider } from '@/app/auth/AuthContext'
 
 const germaniaOne = Germania_One({
   weight: '400',
@@ -17,9 +19,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={germaniaOne.className}>
       <body>
+        <AuthProvider>
+        <ToastProvider>
       <CartProvider>
         {children}
-        </CartProvider></body>
+        </CartProvider>
+        </ToastProvider>
+        </AuthProvider></body>
+        
     </html>
   );
 }
