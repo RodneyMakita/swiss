@@ -58,7 +58,7 @@ export default function Component() {
 
   const [errors, setErrors] = useState<AddressErrors>({});
 
-  const [loading, setLoading] = useState(false); // State to handle loading
+  const [loading, setLoading] = useState(false); 
 
 
 

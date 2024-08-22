@@ -21,13 +21,13 @@ interface EditProfileProps {
 export const EditProfile: React.FC<EditProfileProps> = ({ setIsEditing, displayName, email, avatarUrl }) => {
   const { user } = useAuth();
   const [newDisplayName, setNewDisplayName] = useState(displayName);
-  const [newEmail, setNewEmail] = useState(email || ''); // Default to empty if not provided
+  const [newEmail, setNewEmail] = useState(email || ''); 
   const [newAvatar, setNewAvatar] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      // Set the email only if it's not already set
+    
       if (!newEmail && user.email) {
         setNewEmail(user.email);
       }

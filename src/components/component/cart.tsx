@@ -1,7 +1,7 @@
-// Cart.tsx
 'use client';
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation'; // Use for navigation
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -17,17 +17,14 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
-  const { cart, updateQuantity, removeFromCart, clearCart, setCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const [loading, setLoading] = useState(true);
-  const totalCost = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  );
+  const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const router = useRouter(); // Initialize router for navigation
 
   useEffect(() => {
     if (user) {
-      // Firestore cart will be managed via CartContext
-      setLoading(false); // Assuming loading state is handled via CartContext
+      setLoading(false);
     } else {
       console.error('User is not authenticated');
       setLoading(false);
@@ -40,6 +37,11 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
 
   const handleRemoveFromCart = (id: string) => {
     removeFromCart(id);
+  };
+
+  const handleCheckout = () => {
+    // Navigate to the checkout page
+    router.push('/checkout');
   };
 
   if (loading) {
@@ -79,8 +81,11 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                 <Image
                   src={item.imageURL}
                   alt={item.name}
-                  className="w-24 h-24 md:w-32 md:h-32 rounded-md object-cover"
+                  width={128}
+                  height={128}
+                  className="rounded-md object-cover"
                 />
+
                 <div className="flex-1">
                   <h3 className="font-medium text-lg">{item.name}</h3>
                   <div className="text-sm text-muted-foreground">
@@ -91,9 +96,7 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() =>
-                      handleUpdateQuantity(item.id, item.quantity - 1)
-                    }
+                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                     disabled={item.quantity <= 1}
                   >
                     <FaMinus className="w-5 h-5" />
@@ -102,9 +105,7 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() =>
-                      handleUpdateQuantity(item.id, item.quantity + 1)
-                    }
+                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                   >
                     <FaPlus className="w-5 h-5" />
                   </Button>
@@ -128,7 +129,7 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
             <Button
               className="mt-4 md:mt-0"
               variant="default"
-              onClick={() => alert('Proceeding to checkout...')}
+              onClick={handleCheckout} 
             >
               Checkout
             </Button>
