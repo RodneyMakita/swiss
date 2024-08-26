@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
 import { db, collection, doc, getDoc } from '@/lib/firebase';
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useCart } from "@/app/backend/CartContext"; 
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { useCart } from '@/app/backend/CartContext';
 import '@/app/globals.css';
 import { Spinner } from '@nextui-org/react';
+import { useRouter } from 'next/navigation';
 
 const stripePromise: Promise<Stripe | null> = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -30,13 +31,15 @@ export default function Checkout() {
   const { cart } = useCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<Address | null>(null);
+  const [email, setEmail] = useState<string>(''); // State for storing the user's email
+  const router = useRouter();
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const shippingFee = totalCost < 100 ? 10 : 0;
   const totalWithShipping = totalCost + shippingFee;
 
   useEffect(() => {
-    const fetchAddress = async () => {
+    const fetchUserData = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
 
@@ -46,34 +49,38 @@ export default function Checkout() {
       }
 
       try {
+        // Set the user's email
+        setEmail(user.email || '');
+
         const userId = user.uid;
-        const addressDoc = await getDoc(doc(collection(db, "users", userId, "Address"), "addressId"));
+        const addressDoc = await getDoc(doc(collection(db, 'users', userId, 'Address'), 'addressId'));
 
         if (addressDoc.exists()) {
           setAddress(addressDoc.data() as Address);
         } else {
           console.log("No address found for the user.");
+          router.push('/address');
         }
       } catch (error) {
-        console.error("Error fetching address:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchAddress();
-  }, []);
+    fetchUserData();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-  
+
     const stripe = await stripePromise;
-  
+
     if (!stripe) {
       alert("Stripe initialization failed");
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await fetch('/api/checkout-session', {
         method: 'POST',
@@ -87,20 +94,20 @@ export default function Checkout() {
               product_data: {
                 name: item.name,
               },
-              unit_amount: item.price * 100,
+              unit_amount: Math.round(item.price * 100),
             },
             quantity: item.quantity,
           })),
         }),
       });
-  
+
       const session = await response.json();
-  
+
       if (response.ok && session.id) {
         const result = await stripe.redirectToCheckout({
           sessionId: session.id,
         });
-  
+
         if (result.error) {
           alert(result.error.message);
         }
@@ -114,7 +121,6 @@ export default function Checkout() {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="bg-background text-foreground p-6 md:p-8 lg:p-12 rounded-lg shadow-lg max-w-4xl mx-auto">
@@ -135,7 +141,13 @@ export default function Checkout() {
           </div>
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="Enter your email" required />
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email || 'Loading...'} // Bind the email value
+              readOnly
+            />
           </div>
           <div>
             <Label htmlFor="address">Shipping Address</Label>
