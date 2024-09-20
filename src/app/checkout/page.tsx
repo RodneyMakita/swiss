@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
-import { db, collection, doc, getDoc } from '@/lib/firebase';
+import { db, collection, doc, getDoc, addDoc } from '@/lib/firebase';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,8 +24,15 @@ interface Address {
   country: string;
 }
 
+interface Order {
+  id: string;
+  date: string;
+  items: { name: string; quantity: number; price: number }[];
+  total: number;
+}
+
 export default function Checkout() {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<Address | null>(null);
   const [email, setEmail] = useState<string>('');
@@ -37,7 +44,25 @@ export default function Checkout() {
   const shippingFee = totalCost < 100 ? 10 : 0;
   const totalWithShipping = totalCost + shippingFee;
 
-  // Fetch exchange rate on component mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleSuccessfulPayment = async (newOrder: Order) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (!user) {
+      console.error("User is not authenticated");
+      return; // Exit if user is null
+    }
+  
+    clearCart();
+    try {
+      await addDoc(collection(db, 'users', user.uid, 'orders'), newOrder);
+    } catch (error) {
+      console.error("Error saving order:", error);
+    }
+    router.push('/success');
+  };
+  
   useEffect(() => {
     const fetchConversionRate = async () => {
       try {
@@ -55,17 +80,17 @@ export default function Checkout() {
     const fetchUserData = async () => {
       const auth = getAuth();
       const user = auth.currentUser;
-
+  
       if (!user) {
         console.error("User is not authenticated");
+        router.push('/login'); // Redirect to login if not authenticated
         return;
       }
-
+  
       try {
         setEmail(user.email || '');
-        const userId = user.uid;
-        const addressDoc = await getDoc(doc(collection(db, 'users', userId, 'Address'), 'addressId'));
-
+        const addressDoc = await getDoc(doc(collection(db, 'users', user.uid, 'Address'), 'addressId'));
+        
         if (addressDoc.exists()) {
           setAddress(addressDoc.data() as Address);
         } else {
@@ -76,35 +101,39 @@ export default function Checkout() {
         console.error("Error fetching user data:", error);
       }
     };
-
+  
     fetchUserData();
   }, [router]);
-
+  
   useEffect(() => {
     if (!address || !paypalContainerRef.current || conversionRate === 0) return;
 
     const totalInUSD = (totalWithShipping * conversionRate).toFixed(2);
-
-    // Dynamically load PayPal SDK script
     const paypalScript = document.createElement('script');
     paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ado1_eoTep86aZ3NEotXjFG_YXHo-RlrmsCtwpNJItwtpmjnnVpjou6hQ52MaL5cILjMWqP_vURdSgWj&currency=USD`;
     paypalScript.addEventListener('load', () => {
       window.paypal.Buttons({
         createOrder: (data: any, actions: any) => {
           return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: totalInUSD,
-                },
-              },
-            ],
+            purchase_units: [{ amount: { value: totalInUSD } }],
           });
         },
         onApprove: (data: any, actions: any) => {
           return actions.order.capture().then((details: any) => {
             console.log('Transaction completed by', details.payer.name.given_name);
-            router.push('/success');
+
+            const newOrder: Order = {
+              id: details.id,
+              date: new Date().toISOString(),
+              items: cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+              })),
+              total: totalWithShipping,
+            };
+
+            handleSuccessfulPayment(newOrder);
           });
         },
         onCancel: (data: any) => {
@@ -123,7 +152,7 @@ export default function Checkout() {
     return () => {
       if (paypalScript) document.body.removeChild(paypalScript);
     };
-  }, [router, totalWithShipping, address, conversionRate]);
+  }, [router, totalWithShipping, address, conversionRate, cart, handleSuccessfulPayment]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -197,8 +226,6 @@ export default function Checkout() {
                 <span className="text-lg font-medium">${(totalWithShipping * conversionRate).toFixed(2)}</span>
               </div>
             </div>
-          </div>
-          <div className="mt-4 flex justify-end">
           </div>
         </div>
       </form>

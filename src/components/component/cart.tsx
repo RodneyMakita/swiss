@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation'; // Use for navigation
@@ -42,6 +42,13 @@ const Cart: React.FC<CartProps> = ({ onContinueShopping, user }) => {
   const handleCheckout = () => {
     // Navigate to the checkout page
     router.push('/checkout');
+  };
+
+  const handleSuccessfulPayment = async () => {
+    // Clear the cart after successful payment
+    await clearCart();
+    // Redirect or perform any other action needed
+    router.push('/success');
   };
 
   if (loading) {
