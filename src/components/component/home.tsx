@@ -74,7 +74,7 @@ const Home: React.FC = () => {
           <h2 className="text-lg font-bold mb-2">Categories</h2>
           <div className="grid grid-cols-4 gap-4">
             <Link
-              href="/Categories"
+              href="/cigarettes"
               className="flex flex-col items-center gap-1"
               prefetch={false}
             >
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
               <span className="text-sm">Cigarettes</span>
             </Link>
             <Link
-              href="#"
+              href="/bakery"
               className="flex flex-col items-center gap-1"
               prefetch={false}
             >
@@ -90,21 +90,14 @@ const Home: React.FC = () => {
               <span className="text-sm">Bakery</span>
             </Link>
             <Link
-              href="#"
+              href="/snacks"
               className="flex flex-col items-center gap-1"
               prefetch={false}
             >
               <FontAwesomeIcon icon={faCookieBite} className="w-8 h-8" />
               <span className="text-sm">Snacks</span>
             </Link>
-            <Link
-              href="#"
-              className="flex flex-col items-center gap-1"
-              prefetch={false}
-            >
-              <GemIcon className="w-8 h-8" />
-              <span className="text-sm">Beauty</span>
-            </Link>
+   
           </div>
         </section>
         <FeaturedProducts

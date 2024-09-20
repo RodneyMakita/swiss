@@ -1,7 +1,6 @@
-'use client';
+'use client'
 
 import { useState, useEffect } from 'react';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
 import { getAuth } from 'firebase/auth';
 import { db, collection, doc, getDoc } from '@/lib/firebase';
 import { Label } from '@/components/ui/label';
@@ -13,8 +12,7 @@ import { useCart } from '@/app/backend/CartContext';
 import '@/app/globals.css';
 import { Spinner } from '@nextui-org/react';
 import { useRouter } from 'next/navigation';
-
-const stripePromise: Promise<Stripe | null> = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+import axios from 'axios';
 
 interface Address {
   firstName: string;
@@ -31,7 +29,7 @@ export default function Checkout() {
   const { cart } = useCart();
   const [loading, setLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<Address | null>(null);
-  const [email, setEmail] = useState<string>(''); // State for storing the user's email
+  const [email, setEmail] = useState<string>('');
   const router = useRouter();
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -49,7 +47,6 @@ export default function Checkout() {
       }
 
       try {
-        // Set the user's email
         setEmail(user.email || '');
 
         const userId = user.uid;
@@ -73,51 +70,30 @@ export default function Checkout() {
     e.preventDefault();
     setLoading(true);
 
-    const stripe = await stripePromise;
-
-    if (!stripe) {
-      alert("Stripe initialization failed");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch('/api/checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Make a request to your backend to initiate the Ozow payment
+      const response = await axios.post('/api/initiate-ozow-payment', {
+        amount: totalWithShipping.toFixed(2),
+        transactionReference: `order-${Date.now()}`, // Unique reference for the transaction
+        customer: {
+          firstName: address?.firstName,
+          lastName: address?.lastName,
+          email: email,
+          cellphone: address?.cellphone,
         },
-        body: JSON.stringify({
-          items: cart.map(item => ({
-            price_data: {
-              currency: 'zar',
-              product_data: {
-                name: item.name,
-              },
-              unit_amount: Math.round(item.price * 100),
-            },
-            quantity: item.quantity,
-          })),
-        }),
+        payment: {
+          successUrl: `${window.location.origin}/success`,
+          errorUrl: `${window.location.origin}/cancel`,
+          notifyUrl: `${window.location.origin}/api/ozow-notify`,
+        },
       });
 
-      const session = await response.json();
+      // Redirect the user to Ozow's payment page
+      const { paymentUrl } = response.data;
+      window.location.href = paymentUrl;
 
-      if (response.ok && session.id) {
-        const result = await stripe.redirectToCheckout({
-          sessionId: session.id,
-        });
-
-        if (result.error) {
-          alert(result.error.message);
-        }
-      } else {
-        throw new Error('Failed to create checkout session');
-      }
     } catch (error) {
-      console.error('Error redirecting to checkout:', error);
-      alert('An error occurred while processing your order.');
-    } finally {
+      console.error("Error initiating payment:", error);
       setLoading(false);
     }
   };
@@ -145,7 +121,7 @@ export default function Checkout() {
               id="email"
               type="email"
               placeholder="Enter your email"
-              value={email || 'Loading...'} // Bind the email value
+              value={email || 'Loading...'}
               readOnly
             />
           </div>
@@ -157,31 +133,6 @@ export default function Checkout() {
               value={address ? `${address.streetAddress}, ${address.city}, ${address.province}, ${address.postalCode}` : 'Loading...'}
               readOnly
             />
-          </div>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="card-number">Card Number</Label>
-            <Input id="card-number" type="text" placeholder="Card details will be entered on Stripe" disabled />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="expiration">Expiration Date</Label>
-              <Input id="expiration" type="text" placeholder="MM/YY" disabled />
-            </div>
-            <div>
-              <Label htmlFor="cvv">CVV</Label>
-              <Input id="cvv" type="text" placeholder="CVV" disabled />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="discount-code">Discount Code</Label>
-            <div className="flex items-center">
-              <Input id="discount-code" placeholder="Enter discount code" />
-              <Button variant="outline" className="ml-2">
-                Apply
-              </Button>
-            </div>
           </div>
         </div>
         <div className="mt-8">

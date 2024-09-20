@@ -156,7 +156,9 @@ export default function ProductPage({ product }: ProductPageProps) {
               <span className="text-sm text-muted-foreground">({product.reviewCount} reviews)</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-3xl font-bold">R{product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold">
+                {product.price ? `R${Number(product.price).toFixed(2)}` : "Price not available"}
+              </span>
               <Badge variant="secondary" className="text-lg">
                 {product.category}
               </Badge>
@@ -221,7 +223,9 @@ export default function ProductPage({ product }: ProductPageProps) {
                     <p className="text-muted-foreground line-clamp-2">{product.description}</p>
                   </CardContent>
                   <CardFooter className="flex justify-between items-center">
-                    <span className="text-lg font-bold">R{product.price.toFixed(2)}</span>
+                    <span className="text-lg font-bold">
+                      {product.price ? `R${Number(product.price).toFixed(2)}` : "Price not available"}
+                    </span>
                     <Button size="sm" asChild>
                       <Link href={`/products/${product.id}`} legacyBehavior>View Details</Link>
                     </Button>

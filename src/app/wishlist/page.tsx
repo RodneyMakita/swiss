@@ -85,7 +85,7 @@ export default function WishlistPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-primary truncate">{item.name}</p>
-                  <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">R{item.price.toFixed(2)}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button 

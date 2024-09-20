@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { db } from "@/app/firebase";
 import FeaturedProducts from "../component/FeaturedProducts";
 import { useCart } from "@/app/backend/CartContext";
 import { Product } from "@/app/types/product"; // Import the shared Product type
+
 export default function Categories() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ export default function Categories() {
           <h2 className="text-lg font-bold mb-2">Categories</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link
-              href="#"
+              href="/cigarettes"
               className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
               prefetch={false}
             >
@@ -58,7 +59,7 @@ export default function Categories() {
               <span className="text-sm font-medium">Cigarettes</span>
             </Link>
             <Link
-              href="#"
+              href="/bakery"
               className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
               prefetch={false}
             >
@@ -66,37 +67,14 @@ export default function Categories() {
               <span className="text-sm font-medium">Bakery</span>
             </Link>
             <Link
-              href="#"
+              href="/snacks"
               className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
               prefetch={false}
             >
               <FontAwesomeIcon icon={faCookieBite} className="w-8 h-8" />
               <span className="text-sm font-medium">Snacks</span>
             </Link>
-            <Link
-              href="#"
-              className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
-              prefetch={false}
-            >
-              <GemIcon className="w-8 h-8" />
-              <span className="text-sm font-medium">Beauty</span>
-            </Link>
-            <Link
-              href="#"
-              className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
-              prefetch={false}
-            >
-              <ClubIcon className="w-8 h-8" />
-              <span className="text-sm font-medium">Sports</span>
-            </Link>
-            <Link
-              href="#"
-              className="flex flex-col items-center gap-1 bg-background rounded-md p-4 hover:bg-accent hover:text-accent-foreground transition-colors"
-              prefetch={false}
-            >
-              <ApertureIcon className="w-8 h-8" />
-              <span className="text-sm font-medium">Appliances</span>
-            </Link>
+  
           </div>
         </section>
         <FeaturedProducts

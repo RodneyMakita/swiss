@@ -51,7 +51,6 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                     width={200}
                     height={200}
                     className="w-full h-40 object-cover"
-                    // Ensure this src is valid
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                   <div className="p-2 flex-1 flex flex-col justify-between">
@@ -63,7 +62,10 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                 </a>
               </Link>
               <div className="p-2 flex items-center justify-between mt-2">
-                <span className="text-sm font-bold">R{product.price.toFixed(2)}</span>
+                {/* Ensure price is a number */}
+                <span className="text-sm font-bold">
+                  R{typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price).toFixed(2)}
+                </span>
                 <AddShoppingCartIcon
                   className={`w-5 h-5 text-muted-foreground cursor-pointer ${animatingId === product.id ? 'bounce-animation' : ''}`}
                   onClick={() => handleAddToCart(product)}
