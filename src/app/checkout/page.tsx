@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db, collection, doc, getDoc } from '@/lib/firebase';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,6 @@ import { useCart } from '@/app/backend/CartContext';
 import '@/app/globals.css';
 import { Spinner } from '@nextui-org/react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 
 interface Address {
   firstName: string;
@@ -30,11 +29,27 @@ export default function Checkout() {
   const [loading, setLoading] = useState<boolean>(false);
   const [address, setAddress] = useState<Address | null>(null);
   const [email, setEmail] = useState<string>('');
+  const [conversionRate, setConversionRate] = useState<number>(0);
   const router = useRouter();
+  const paypalContainerRef = useRef<HTMLDivElement>(null);
 
   const totalCost = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const shippingFee = totalCost < 100 ? 10 : 0;
   const totalWithShipping = totalCost + shippingFee;
+
+  // Fetch exchange rate on component mount
+  useEffect(() => {
+    const fetchConversionRate = async () => {
+      try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/ZAR');
+        const data = await response.json();
+        setConversionRate(data.rates.USD);
+      } catch (error) {
+        console.error('Error fetching conversion rate:', error);
+      }
+    };
+    fetchConversionRate();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -48,7 +63,6 @@ export default function Checkout() {
 
       try {
         setEmail(user.email || '');
-
         const userId = user.uid;
         const addressDoc = await getDoc(doc(collection(db, 'users', userId, 'Address'), 'addressId'));
 
@@ -66,36 +80,55 @@ export default function Checkout() {
     fetchUserData();
   }, [router]);
 
+  useEffect(() => {
+    if (!address || !paypalContainerRef.current || conversionRate === 0) return;
+
+    const totalInUSD = (totalWithShipping * conversionRate).toFixed(2);
+
+    // Dynamically load PayPal SDK script
+    const paypalScript = document.createElement('script');
+    paypalScript.src = `https://www.paypal.com/sdk/js?client-id=Ado1_eoTep86aZ3NEotXjFG_YXHo-RlrmsCtwpNJItwtpmjnnVpjou6hQ52MaL5cILjMWqP_vURdSgWj&currency=USD`;
+    paypalScript.addEventListener('load', () => {
+      window.paypal.Buttons({
+        createOrder: (data: any, actions: any) => {
+          return actions.order.create({
+            purchase_units: [
+              {
+                amount: {
+                  value: totalInUSD,
+                },
+              },
+            ],
+          });
+        },
+        onApprove: (data: any, actions: any) => {
+          return actions.order.capture().then((details: any) => {
+            console.log('Transaction completed by', details.payer.name.given_name);
+            router.push('/success');
+          });
+        },
+        onCancel: (data: any) => {
+          console.warn('PayPal payment was cancelled:', data);
+          alert('Payment cancelled. You can try again.');
+        },
+        onError: (err: any) => {
+          console.error('PayPal error', err);
+          alert('An error occurred during the transaction. Please try again.');
+        },
+      }).render(paypalContainerRef.current);
+    });
+
+    document.body.appendChild(paypalScript);
+
+    return () => {
+      if (paypalScript) document.body.removeChild(paypalScript);
+    };
+  }, [router, totalWithShipping, address, conversionRate]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      // Make a request to your backend to initiate the Ozow payment
-      const response = await axios.post('/api/initiate-ozow-payment', {
-        amount: totalWithShipping.toFixed(2),
-        transactionReference: `order-${Date.now()}`, // Unique reference for the transaction
-        customer: {
-          firstName: address?.firstName,
-          lastName: address?.lastName,
-          email: email,
-          cellphone: address?.cellphone,
-        },
-        payment: {
-          successUrl: `${window.location.origin}/success`,
-          errorUrl: `${window.location.origin}/cancel`,
-          notifyUrl: `${window.location.origin}/api/ozow-notify`,
-        },
-      });
-
-      // Redirect the user to Ozow's payment page
-      const { paymentUrl } = response.data;
-      window.location.href = paymentUrl;
-
-    } catch (error) {
-      console.error("Error initiating payment:", error);
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   return (
@@ -156,18 +189,20 @@ export default function Checkout() {
               </div>
               <Separator />
               <div className="flex justify-between items-center">
-                <span className="text-lg font-medium">Total</span>
+                <span className="text-lg font-medium">Total (ZAR)</span>
                 <span className="text-lg font-medium">R{totalWithShipping.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-medium">Total (USD)</span>
+                <span className="text-lg font-medium">${(totalWithShipping * conversionRate).toFixed(2)}</span>
               </div>
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <Button type="submit" size="lg" disabled={loading}>
-              {loading ? 'Processing...' : 'Place Order'}
-            </Button>
           </div>
         </div>
       </form>
+      <div ref={paypalContainerRef} className="mt-4"></div>
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-50">
           <Spinner size="lg" />
