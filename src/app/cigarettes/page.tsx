@@ -6,45 +6,37 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
 import { Product } from "@/app/types/product";
 import Image from 'next/image';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore query functions
-import { db } from "@/app/firebase"; // Import Firestore instance
-import { ArrowLeft } from 'lucide-react'; // Import the ArrowLeft icon from lucide-react
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from "@/app/firebase";
+import { ArrowLeft } from 'lucide-react';
 
-interface cigarettesProps {
-  products: Product[];
-  loading: boolean;
-  handleAddToCart: (product: Product) => void;
-  animatingId: string | null;
-}
+const Cigarettes: React.FC = () => {
+  const [cigarettesProducts, setCigarettesProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
 
-const cigarettes: React.FC<cigarettesProps> = ({
-  products,
-  loading,
-  handleAddToCart,
-  animatingId,
-}) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [cigarettesProducts, setcigarettesProducts] = useState<Product[]>([]);
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [loadingcigarettes, setLoadingcigarettes] = useState(true);
-
-  // Fetch only cigarettes products from Firestore
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // Fetch cigarettes products from Firestore
   useEffect(() => {
-    const fetchcigarettesProducts = async () => {
-      setLoadingcigarettes(true);
+    const fetchCigarettesProducts = async () => {
+      setLoading(true);
       const cigarettesQuery = query(collection(db, "products"), where("category", "==", "cigarettes"));
       const snapshot = await getDocs(cigarettesQuery);
       const cigarettesList = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Product[];
-      setcigarettesProducts(cigarettesList);
-      setLoadingcigarettes(false);
+      setCigarettesProducts(cigarettesList);
+      setLoading(false);
     };
 
-    fetchcigarettesProducts();
+    fetchCigarettesProducts();
   }, []);
+
+  const handleAddToCart = (product: Product) => {
+    setAnimatingId(product.id);
+    // Add to cart logic here (to be implemented)
+    setTimeout(() => setAnimatingId(null), 1000); // Simulates animation reset
+  };
 
   return (
     <>
@@ -56,10 +48,10 @@ const cigarettes: React.FC<cigarettesProps> = ({
         </Link>
       </header>
 
-      {/* cigarettes Products Section */}
+      {/* Cigarettes Products Section */}
       <section className="py-4 px-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {loadingcigarettes ? (
+          {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="bg-background rounded-md overflow-hidden shadow-md">
                 <Skeleton className="w-full h-40" />
@@ -116,4 +108,4 @@ const cigarettes: React.FC<cigarettesProps> = ({
   );
 };
 
-export default cigarettes;
+export default Cigarettes;
