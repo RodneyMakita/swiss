@@ -6,30 +6,19 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
 import { Product } from "@/app/types/product";
 import Image from 'next/image';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore query functions
-import { db } from "@/app/firebase"; // Import Firestore instance
-import { ArrowLeft } from 'lucide-react'; // Import the ArrowLeft icon from lucide-react
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from "@/app/firebase";
+import { ArrowLeft } from 'lucide-react';
 
-interface snacksProps {
-  products: Product[];
-  loading: boolean;
-  handleAddToCart: (product: Product) => void;
-  animatingId: string | null;
-}
-
-const Snacks: React.FC<snacksProps> = ({
-  products,
-  loading,
-  handleAddToCart,
-  animatingId,
-}) => {
+const Snacks: React.FC = () => {
   const [snacksProducts, setSnacksProducts] = useState<Product[]>([]);
-  const [loadingSnacks, setLoadingSnacks] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [animatingId, setAnimatingId] = useState<string | null>(null);
 
-  // Fetch only snacks products from Firestore
+  // Fetch snacks products from Firestore
   useEffect(() => {
     const fetchSnacksProducts = async () => {
-      setLoadingSnacks(true);
+      setLoading(true);
       const snacksQuery = query(collection(db, "products"), where("category", "==", "snacks"));
       const snapshot = await getDocs(snacksQuery);
       const snacksList = snapshot.docs.map((doc) => ({
@@ -37,11 +26,17 @@ const Snacks: React.FC<snacksProps> = ({
         ...doc.data(),
       })) as Product[];
       setSnacksProducts(snacksList);
-      setLoadingSnacks(false);
+      setLoading(false);
     };
 
     fetchSnacksProducts();
   }, []);
+
+  const handleAddToCart = (product: Product) => {
+    setAnimatingId(product.id);
+    // Add your cart logic here
+    setTimeout(() => setAnimatingId(null), 1000); // Reset animation after 1 second
+  };
 
   return (
     <>
@@ -56,7 +51,7 @@ const Snacks: React.FC<snacksProps> = ({
       {/* Snacks Products Section */}
       <section className="py-4 px-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {loadingSnacks ? (
+          {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="bg-background rounded-md overflow-hidden shadow-md">
                 <Skeleton className="w-full h-40" />
