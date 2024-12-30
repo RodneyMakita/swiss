@@ -1,11 +1,12 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation'; // Import useRouter
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { JSX, SVGProps, useEffect, useState } from 'react';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import '@/app/globals.css';
+
+export const dynamic = 'force-dynamic'; // Force dynamic rendering
 
 interface PaymentDetails {
 	amount?: string;
@@ -15,9 +16,9 @@ interface PaymentDetails {
 
 export default function SuccessPage() {
 	const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>({});
-	const searchParams = useSearchParams(); // Use the useSearchParams hook
-	const sessionId = searchParams.get('session_id'); // Get the 'session_id' query parameter
-	const router = useRouter(); // Use the useRouter hook for navigation
+	const searchParams = useSearchParams();
+	const sessionId = searchParams.get('session_id');
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchPaymentDetails = async () => {
@@ -29,9 +30,11 @@ export default function SuccessPage() {
 
 				if (response.ok) {
 					setPaymentDetails({
-						amount: details.amount ? `${(details.amount / 100).toFixed(2)} ${details.currency.toUpperCase()}` : 'N/A',
+						amount: details.amount
+							? `${(details.amount / 100).toFixed(2)} ${details.currency.toUpperCase()}`
+							: 'N/A',
 						date: new Date(details.created * 1000).toLocaleDateString(),
-						paymentMethod: details.payment_method ? details.payment_method : 'N/A',
+						paymentMethod: details.payment_method || 'N/A',
 					});
 				} else {
 					console.error('Error fetching payment details:', details.error);
@@ -52,9 +55,7 @@ export default function SuccessPage() {
 					<h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
 						Payment Successful!
 					</h1>
-					<p className="mt-4 text-muted-foreground">
-						Thank you for your payment. We appreciate your business.
-					</p>
+					<p className="mt-4 text-muted-foreground">Thank you for your payment. We appreciate your business.</p>
 				</div>
 				<div className="mt-8 w-full max-w-md space-y-4">
 					<Card>
@@ -87,7 +88,7 @@ export default function SuccessPage() {
 	);
 }
 
-function CircleCheckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+function CircleCheckIcon(props: JSX.IntrinsicAttributes & React.SVGProps<SVGSVGElement>) {
 	return (
 		<svg
 			{...props}
