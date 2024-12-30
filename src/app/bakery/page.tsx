@@ -6,31 +6,26 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import Link from 'next/link';
 import { Product } from "@/app/types/product";
 import Image from 'next/image';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Import Firestore query functions
-import { db } from "@/app/firebase"; // Import Firestore instance
-import { ArrowLeft } from 'lucide-react'; // Import the ArrowLeft icon from lucide-react
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from "@/app/firebase";
+import { ArrowLeft } from 'lucide-react';
 
 interface BakeryProps {
-  products: Product[];
-  loading: boolean;
   handleAddToCart: (product: Product) => void;
   animatingId: string | null;
 }
 
-const Bakery: React.FC<BakeryProps> = ({
-  products,
-  loading,
-  handleAddToCart,
-  animatingId,
-}) => {
+const Bakery: React.FC<BakeryProps> = ({ handleAddToCart, animatingId }) => {
   const [BakeryProducts, setBakeryProducts] = useState<Product[]>([]);
   const [loadingBakery, setLoadingBakery] = useState(true);
 
-  // Fetch only Bakery products from Firestore
   useEffect(() => {
     const fetchBakeryProducts = async () => {
       setLoadingBakery(true);
-      const BakeryQuery = query(collection(db, "products"), where("category", "==", "bakery"));
+      const BakeryQuery = query(
+        collection(db, "products"),
+        where("category", "==", "bakery")
+      );
       const snapshot = await getDocs(BakeryQuery);
       const BakeryList = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -45,7 +40,6 @@ const Bakery: React.FC<BakeryProps> = ({
 
   return (
     <>
-      {/* Header to go back */}
       <header className="bg-primary text-primary-foreground py-2 px-4 flex items-center h-14">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
           <ArrowLeft className="h-5 w-5" />
@@ -53,7 +47,6 @@ const Bakery: React.FC<BakeryProps> = ({
         </Link>
       </header>
 
-      {/* Bakery Products Section */}
       <section className="py-4 px-4">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {loadingBakery ? (
@@ -100,7 +93,9 @@ const Bakery: React.FC<BakeryProps> = ({
                       : 'Price not available'}
                   </span>
                   <AddShoppingCartIcon
-                    className={`w-5 h-5 text-muted-foreground cursor-pointer ${animatingId === product.id ? 'bounce-animation' : ''}`}
+                    className={`w-5 h-5 text-muted-foreground cursor-pointer ${
+                      animatingId === product.id ? 'bounce-animation' : ''
+                    }`}
                     onClick={() => handleAddToCart(product)}
                   />
                 </div>
